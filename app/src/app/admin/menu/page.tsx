@@ -1,5 +1,5 @@
 // app/admin/menu/page.tsx
-
+'use client'
 async function getAllMenuItems() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu`, {
     cache: 'no-cache',
@@ -30,7 +30,7 @@ export default async function AdminMenu() {
   )
 }
 
-'use client'
+
 import { useState } from 'react'
 
 function NewMenuItemForm() {

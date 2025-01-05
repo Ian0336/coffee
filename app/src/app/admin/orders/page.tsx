@@ -1,5 +1,5 @@
+'use client'
 // app/admin/orders/page.tsx
-
 async function getPendingOrders() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders?status=pending`, {
     cache: 'no-cache',
@@ -47,7 +47,7 @@ export default async function AdminOrders() {
 }
 
 // 用一個 Client Component 實作「完成」按鈕
-'use client'
+
 import { useState } from 'react'
 
 function CompleteButton({ orderId }: { orderId: string }) {
