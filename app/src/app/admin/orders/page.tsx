@@ -1,85 +1,108 @@
 'use client'
-// app/admin/orders/page.tsx
-async function getPendingOrders() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders?status=pending`, {
-    cache: 'no-cache',
-  })
-  if (!res.ok) {
-    throw new Error('Failed to fetch pending orders')
-  }
-  return res.json()
-}
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default async function AdminOrders() {
-  const orders = await getPendingOrders()
+export default function AdminOrders() {
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  return (
-    <div>
-      <h1 className="text-xl font-bold mb-4">未完成訂單</h1>
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border p-2">訂單編號</th>
-            <th className="border p-2">品項</th>
-            <th className="border p-2">客製化</th>
-            <th className="border p-2">數量</th>
-            <th className="border p-2">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order: any) => (
-            <tr key={order.id}>
-              <td className="border p-2">{order.id}</td>
-              <td className="border p-2">{order.menuItem.name}</td>
-              <td className="border p-2">
-                甜度: {order.sugar}, 冰塊: {order.ice}
-              </td>
-              <td className="border p-2">{order.quantity}</td>
-              <td className="border p-2">
-                <CompleteButton orderId={order.id} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
+  useEffect(() => {
+    fetchOrders()
+  }, [])
 
-// 用一個 Client Component 實作「完成」按鈕
-
-import { useState } from 'react'
-
-function CompleteButton({ orderId }: { orderId: string }) {
-  const [loading, setLoading] = useState(false)
-
-  async function handleComplete() {
-    setLoading(true)
+  async function fetchOrders() {
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' }),
+      const res = await fetch(`/api/orders?status=pending`, {
+        cache: 'no-cache',
       })
       if (!res.ok) {
-        throw new Error('Failed to complete order')
+        throw new Error('Failed to fetch orders')
       }
-      alert('訂單已完成！')
-      // 這裡可以用 router.refresh() 或其他方式重新拉取資料
+      const data = await res.json()
+      setOrders(data)
     } catch (err) {
-      alert('更新失敗')
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
+  function CompleteButton({ orderId }: { orderId: string }) {
+    const [isLoading, setIsLoading] = useState(false)
+  
+    async function handleComplete() {
+      setIsLoading(true)
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'completed' }),
+        })
+        if (!res.ok) {
+          throw new Error('Failed to complete order')
+        }
+        alert('訂單已完成！')
+        fetchOrders()
+      } catch (err) {
+        alert('更新失敗')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  
+    return (
+      <button
+        onClick={handleComplete}
+        disabled={isLoading}
+        className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+      >
+        {isLoading ? '處理中...' : '完成'}
+      </button>
+    )
+  }
+
+  if (loading) {
+    return <div>載入中...</div>
+  }
+
   return (
-    <button
-      onClick={handleComplete}
-      disabled={loading}
-      className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
-    >
-      {loading ? '處理中...' : '完成'}
-    </button>
+    <div>
+      <h1 className="text-xl font-bold mb-4">未完成訂單</h1>
+      <div className="space-y-4">
+        {orders.map((order) => (
+          <div key={order.id} className="border rounded-lg p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">訂單編號: {order.id}</h2>
+              <CompleteButton orderId={order.id} />
+            </div>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="text-left p-2">品項</th>
+                  <th className="text-left p-2">客製化</th>
+                  <th className="text-left p-2">數量</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.items.map((item: any, index: number) => (
+                  <tr key={index} className="border-t">
+                    <td className="p-2">{item.menuItem?.name}</td>
+                    <td className="p-2">
+                      冰塊: {item.ice}
+                      {item.milkRatio && `, 牛奶: ${item.milkRatio}`}
+                    </td>
+                    <td className="p-2">{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mt-2 text-sm text-gray-500">
+              訂單時間: {new Date(order.createdAt).toLocaleString()}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

@@ -1,6 +1,8 @@
 // app/layout.tsx
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { CartProvider } from '@/contexts/CartContext'
+import Header from './_components/Header'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,16 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* 這裡可以放前台共用的導覽列等 */}
-        <nav className="bg-white border-b p-4 shadow-sm">
-          <div className="container mx-auto">
-            <h1 className="text-2xl font-bold">My Coffee Shop</h1>
-          </div>
-        </nav>
-        
-        <main className="container mx-auto p-4">
-          {children}
-        </main>
+        <CartProvider>
+          <Header />
+          <main className="container mx-auto p-4">{children}</main>
+        </CartProvider>
       </body>
     </html>
   )

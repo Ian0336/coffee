@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server'
 
 // 模擬資料
 let mockMenu = [
-  { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60 },
-  { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80 },
+  { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60, hasMilk: false },
+  { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80, hasMilk: true },
 ]
 
 export async function GET(request: Request) {

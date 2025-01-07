@@ -2,6 +2,8 @@
 // app/order/[id]/page.tsx
 import { useEffect, useState } from 'react'
 import { notFound } from 'next/navigation'
+import { useCart } from '@/contexts/CartContext'
+import { useRouter } from 'next/navigation'
 
 async function getMenuItem(id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu?id=${id}`, {
@@ -32,11 +34,13 @@ async function getMenuItem(id: string) {
 
 // 分離一個 Client Component 來管理前端狀態 (甜度、冰塊、數量等等)
 export default function OrderClient({ params }: any) {
-  const [sugar, setSugar] = useState('正常糖')
+  const router = useRouter()
+  const { dispatch } = useCart()
   const [ice, setIce] = useState('正常冰')
   const [count, setCount] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [item, setItem] = useState<any>(null)
+  const [milkRatio, setMilkRatio] = useState('標準')
 
   useEffect(() => {
     const resolveParams = async () => {
@@ -46,54 +50,31 @@ export default function OrderClient({ params }: any) {
     resolveParams();
   }, [params]);
 
-  async function handleOrder() {
-    try {
-      setIsLoading(true)
-      const res = await fetch(`/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          menuId: item.id,
-          sugar,
-          ice,
-          quantity: count,
-        }),
-      })
-      if (!res.ok) {
-        throw new Error(`Failed to create order`)
-      }
-      // 例如：送完訂單後導向某個成功頁面
-      alert('訂單已送出！')
-    } catch (err) {
-      console.error(err)
-      alert('下單失敗！')
-    } finally {
-      setIsLoading(false)
-    }
+  function handleAddToCart() {
+    if (!item) return
+    
+    dispatch({
+      type: 'ADD_ITEM',
+      payload: {
+        menuId: item.id,
+        menuItem: item,
+        quantity: count,
+        ice,
+        ...(item.hasMilk ? { milkRatio } : {}),
+      },
+    })
+    
+    router.push('/cart')
   }
+
   if (!item) {
     return <div>loading...</div>
   }
+
   return (
     <div className="max-w-md mx-auto border p-4 rounded">
       <h2 className="text-2xl font-bold mb-4">點餐 - {item.name}</h2>
       <p className="mb-2">價格：${item.price}</p>
-
-      {/* 甜度選擇 */}
-      <div className="mb-2">
-        <label className="block font-semibold">甜度</label>
-        <select
-          className="border p-1 rounded"
-          value={sugar}
-          onChange={(e) => setSugar(e.target.value)}
-        >
-          <option>正常糖</option>
-          <option>半糖</option>
-          <option>無糖</option>
-        </select>
-      </div>
 
       {/* 冰塊選擇 */}
       <div className="mb-2">
@@ -109,6 +90,21 @@ export default function OrderClient({ params }: any) {
           <option>熱飲</option>
         </select>
       </div>
+      {/* 只有含牛奶的飲品才顯示牛奶比例選擇 */}
+      {item.hasMilk && (
+        <div className="mb-2">
+          <label className="block font-semibold">牛奶比例</label>
+          <select
+            className="border p-1 rounded"
+            value={milkRatio}
+            onChange={(e) => setMilkRatio(e.target.value)}
+          >
+            <option>標準</option>
+            <option>少奶</option>
+            <option>多奶</option>
+          </select>
+        </div>
+      )}
 
       {/* 數量 */}
       <div className="mb-2">
@@ -122,12 +118,14 @@ export default function OrderClient({ params }: any) {
         />
       </div>
 
+      
+
       <button
-        onClick={handleOrder}
+        onClick={handleAddToCart}
         disabled={isLoading}
         className="bg-blue-600 text-white px-4 py-2 rounded mt-2 disabled:opacity-50"
       >
-        {isLoading ? '送出中...' : '送出訂單'}
+        加入購物車
       </button>
     </div>
   )

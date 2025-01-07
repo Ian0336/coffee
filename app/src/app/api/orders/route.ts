@@ -37,16 +37,21 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { menuId, sugar, ice, quantity } = await request.json()
-  // 這裡應該做更多驗證
+  const { items } = await request.json()
+  
+  // 創建一個包含多個品項的訂單
   const newOrder = {
     id: crypto.randomUUID(),
-    menuId,
-    sugar,
-    ice,
-    quantity,
+    items: items.map((item: any) => ({
+      menuId: item.menuId,
+      sugar: item.sugar,
+      ice: item.ice,
+      quantity: item.quantity,
+    })),
     status: 'pending',
+    createdAt: new Date().toISOString(),
   }
+  
   mockOrders.push(newOrder)
   return NextResponse.json(newOrder, { status: 201 })
 }
