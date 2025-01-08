@@ -13,7 +13,7 @@ async function getAllMenuItems() {
 export default async function AdminMenu() {
   const menu = await getAllMenuItems()
   return (
-    <div>
+    <div className="p-4 md:p-6 lg:p-8">
       <h1 className="text-xl font-bold mb-4">編輯菜單</h1>
       <NewMenuItemForm />
       <div className="mt-4">

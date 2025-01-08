@@ -55,50 +55,67 @@ export default function AdminOrders() {
       <button
         onClick={handleComplete}
         disabled={isLoading}
-        className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+        className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-green-700 transition-colors"
       >
-        {isLoading ? '處理中...' : '完成'}
+        {isLoading ? '處理中...' : '完成訂單'}
       </button>
     )
   }
 
   if (loading) {
-    return <div>載入中...</div>
+    return <div className="p-4">載入中...</div>
   }
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-4">未完成訂單</h1>
+    <div className="p-4 md:p-6 lg:p-8">
+      <h1 className="text-xl md:text-2xl font-bold mb-4">未完成訂單</h1>
       <div className="space-y-4">
         {orders.map((order) => (
-          <div key={order.id} className="border rounded-lg p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">訂單編號: {order.id}</h2>
+          <div key={order.id} className="border rounded-lg p-3 md:p-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+              <div className="space-y-1">
+                <h2 className="text-base md:text-lg font-semibold">訂單編號: {order.id}</h2>
+                <p className="text-sm text-gray-500">
+                  訂單時間: {new Date(order.createdAt).toLocaleString()}
+                </p>
+              </div>
               <CompleteButton orderId={order.id} />
             </div>
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left p-2">品項</th>
-                  <th className="text-left p-2">客製化</th>
-                  <th className="text-left p-2">數量</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((item: any, index: number) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-2">{item.menuItem?.name}</td>
-                    <td className="p-2">
-                      冰塊: {item.ice}
-                      {item.milkRatio && `, 牛奶: ${item.milkRatio}`}
-                    </td>
-                    <td className="p-2">{item.quantity}</td>
+
+            <div className="block sm:hidden space-y-3">
+              {order.items.map((item: any, index: number) => (
+                <div key={index} className="border rounded p-3">
+                  <div className="font-medium">{item.menuItem?.name}</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <div>客製化：{item.ice}{item.milkRatio && `, 牛奶: ${item.milkRatio}`}</div>
+                    <div>數量：{item.quantity}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden sm:block">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left p-2">品項</th>
+                    <th className="text-left p-2">客製化</th>
+                    <th className="text-left p-2 w-20">數量</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-2 text-sm text-gray-500">
-              訂單時間: {new Date(order.createdAt).toLocaleString()}
+                </thead>
+                <tbody>
+                  {order.items.map((item: any, index: number) => (
+                    <tr key={index} className="border-t">
+                      <td className="p-2">{item.menuItem?.name}</td>
+                      <td className="p-2">
+                        冰塊: {item.ice}
+                        {item.milkRatio && `, 牛奶: ${item.milkRatio}`}
+                      </td>
+                      <td className="p-2">{item.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         ))}
