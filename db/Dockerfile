@@ -1,5 +1,3 @@
-FROM postgres:15-alpine
-
-ENV TZ=Asia/Taipei
+FROM postgres:15
 
 COPY init/ /docker-entrypoint-initdb.d/ 

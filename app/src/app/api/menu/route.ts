@@ -4,14 +4,6 @@ import { prisma } from '@/lib/db'
 
 export async function GET(request: Request) {
   try {
-    await prisma.$connect();
-    console.log("✅ Prisma successfully connected to the database!");
-  } catch (error) {
-    console.error("❌ Failed to connect to the database:", error);
-  } finally {
-    await prisma.$disconnect();
-  }
-  try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     

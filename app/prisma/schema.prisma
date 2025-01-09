@@ -12,7 +12,7 @@ model MenuItem {
   name        String
   description String?
   price       Int
-  hasMilk     Boolean     @default(false)
+  hasMilk     Boolean     @default(false) @map("has_milk")
   orderItems  OrderItem[]
 
   @@map("menu_items")
