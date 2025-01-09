@@ -1,34 +1,56 @@
 // app/api/menu/route.ts
 import { NextResponse } from 'next/server'
-
-// 模擬資料
-let mockMenu = [
-  { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60, hasMilk: false },
-  { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80, hasMilk: true },
-]
+import { prisma } from '@/lib/db'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const id = searchParams.get('id')
-  if (id) {
-    // 查詢單一 item
-    const item = mockMenu.find((m) => m.id === id)
-    return NextResponse.json(item ?? null, { status: item ? 200 : 404 })
-  } else {
-    // 查詢全部
-    return NextResponse.json(mockMenu, { status: 200 })
+  try {
+    await prisma.$connect();
+    console.log("✅ Prisma successfully connected to the database!");
+  } catch (error) {
+    console.error("❌ Failed to connect to the database:", error);
+  } finally {
+    await prisma.$disconnect();
+  }
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (id) {
+      const item = await prisma.menuItem.findUnique({
+        where: { id }
+      })
+      if (!item) {
+        return NextResponse.json({ error: 'Item not found' }, { status: 404 })
+      }
+      return NextResponse.json(item)
+    } else {
+      const items = await prisma.menuItem.findMany()
+      return NextResponse.json(items)
+    }
+  } catch (error) {
+    console.error('Database error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: Request) {
-  const { name, description, price } = await request.json()
-  // 這裡應該做更多驗證
-  const newItem = {
-    id: Date.now().toString(),
-    name,
-    description,
-    price: Number(price),
+  try {
+    const { name, description, price, hasMilk } = await request.json()
+    const newItem = await prisma.menuItem.create({
+      data: {
+        id: Date.now().toString(),
+        name,
+        description,
+        price: Number(price),
+        hasMilk: Boolean(hasMilk)
+      }
+    })
+    return NextResponse.json(newItem, { status: 201 })
+  } catch (error) {
+    console.error('Database error:', error)
+    return NextResponse.json({ error: 'Database error' }, { status: 500 })
   }
-  mockMenu.push(newItem)
-  return NextResponse.json(newItem, { status: 201 })
 }
