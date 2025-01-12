@@ -3,6 +3,8 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { CartProvider } from '@/contexts/CartContext'
 import Header from './_components/Header'
+import { Suspense } from 'react'
+import Loading from './loading'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,7 +23,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <CartProvider>
           <Header />
-          <main className="container mx-auto p-4">{children}</main>
+          <Suspense fallback={<Loading />}>
+            <main className="container mx-auto p-4">{children}</main>
+          </Suspense>
         </CartProvider>
       </body>
     </html>

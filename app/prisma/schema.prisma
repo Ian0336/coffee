@@ -40,4 +40,12 @@ model OrderItem {
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
 
   @@map("order_items")
+}
+
+model AdminSession {
+  id         Int      @id @default(autoincrement())
+  seed       String
+  updateTime DateTime @default(now()) @map("update_time")
+
+  @@map("admin_session")
 } 

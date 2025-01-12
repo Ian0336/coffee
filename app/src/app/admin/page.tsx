@@ -1,5 +1,14 @@
 // app/admin/page.tsx
+'use client'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
+
 export default function AdminHome() {
+  const router = useRouter()
+  useEffect(() => {
+    router.push('/admin/orders')
+  }, [])
   return (
     <div>
       <h1 className="text-2xl font-bold">後台管理系統</h1>

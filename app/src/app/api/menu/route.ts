@@ -46,3 +46,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Database error' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  const { id } = await request.json()
+  await prisma.menuItem.delete({ where: { id } })
+  return NextResponse.json({ message: 'Item deleted' }, { status: 200 })
+}

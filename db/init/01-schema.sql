@@ -25,7 +25,16 @@ CREATE TABLE order_items (
     CONSTRAINT fk_menu_item FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 );
 
+CREATE TABLE admin_session (
+    id SERIAL PRIMARY KEY,
+    seed VARCHAR(100) NOT NULL,
+    update_time TIMESTAMP WITH TIME ZONE DEFAULT '2020-01-01 00:00:00+00'
+);
+
 -- 插入初始菜單資料
 INSERT INTO menu_items (id, name, description, price, has_milk) VALUES
     ('1', '美式咖啡', '香濃黑咖啡', 60, false),
     ('2', '拿鐵', '牛奶與咖啡結合', 80, true); 
+
+-- 插入初始 seed
+INSERT INTO admin_session (seed) VALUES ('tesarearettead');

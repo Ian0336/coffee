@@ -1,23 +1,37 @@
+'use client'
 // app/page.tsx
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 // 取得菜單資料
-async function getMenu() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu`, {
-    cache: 'no-cache',
-  })
-  if (!res.ok) throw new Error('Failed to fetch menu data')
-  return res.json()
+// async function getMenu() {
+// const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu`, {
+//   cache: 'no-cache',
+// })
+// if (!res.ok) throw new Error('Failed to fetch menu data')
+// return res.json()
 
-  // 模擬資料
-  // return [
-  //   { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60 },
-  //   { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80 },
-  // ]
-}
+//   // 模擬資料
+//   // return [
+//   //   { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60 },
+//   //   { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80 },
+//   // ]
+// }
 
-export default async function Home() {
-  const menu = await getMenu()
+export default function Home() {
+  const [menu, setMenu] = useState([])
+  // const menu = await getMenu()
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu`, {
+        cache: 'no-cache',
+      })
+      if (!res.ok) throw new Error('Failed to fetch menu data')
+      setMenu(await res.json())
+    }
+    fetchMenu()
+  }, [])
 
   return (
     <>

@@ -61,6 +61,41 @@ export default function AdminOrders() {
       </button>
     )
   }
+  function CancelButton({ orderId }: { orderId: string }) {
+    const [isLoading, setIsLoading] = useState(false)
+    async function handleCancel() {
+      setIsLoading(true)
+      if (!window.confirm('確定要取消此訂單嗎？')) {
+        setIsLoading(false)
+        return
+      }
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) {
+          throw new Error('取消訂單失敗')
+        }
+        alert('訂單已取消！')
+        fetchOrders()
+      } catch (err) {
+        alert('取消失敗')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    return (
+      <button
+        onClick={handleCancel}
+        disabled={isLoading}
+        className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-red-700 transition-colors"
+      >
+        {isLoading ? '處理中...' : 'X'}
+      </button>
+    )
+  }
+
 
   if (loading) {
     return <div className="p-4">載入中...</div>
@@ -79,7 +114,14 @@ export default function AdminOrders() {
                   訂單時間: {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
-              <CompleteButton orderId={order.id} />
+              <div className="flex gap-2">
+                <div className="flex-[0.8]">
+                  <CompleteButton orderId={order.id} />
+                </div>
+                <div className="flex-[0.2]">
+                  <CancelButton orderId={order.id} />
+                </div>
+              </div>
             </div>
 
             <div className="block sm:hidden space-y-3">

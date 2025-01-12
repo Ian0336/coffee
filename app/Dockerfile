@@ -26,9 +26,5 @@ RUN npx prisma generate
 # 暴露應用程式埠
 EXPOSE 3000
 
-# 添加等待腳本
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
-
 # 開發模式啟動
-CMD /wait-for-it.sh && npm run dev
+CMD npm run dev
