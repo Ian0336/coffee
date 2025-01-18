@@ -1,29 +1,40 @@
+'use client'
+import { useState, useEffect } from 'react'
+
 // app/admin/history/page.tsx
 
 async function getCompletedOrders() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders?status=completed`, {
+  const res = await fetch(`/api/orders?status=completed`, {
     cache: 'no-cache',
   })
   if (!res.ok) {
-    throw new Error('Failed to fetch completed orders')
+    throw new Error('Failed to fetch orders')
   }
   return res.json()
 }
 
-export default async function AdminHistory() {
-  const orders = await getCompletedOrders()
-  const totalRevenue = orders.reduce((sum, order) => {
-    return sum + order.items.reduce((itemSum, item) => {
-      return itemSum + (item.menuItem.price * item.quantity)
-    }, 0)
-  }, 0)
-  console.log('orders', orders) 
+export default function AdminHistory() {
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchOrders()
+    const interval = setInterval(fetchOrders, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  async function fetchOrders() {
+    const orders = await getCompletedOrders()
+    setOrders(orders)
+    setLoading(false)
+  }
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="text-xl md:text-2xl font-bold mb-2">歷史訂單 & 收益</h1>
         <p className="text-lg md:text-xl font-semibold text-green-600">
-          總收益：${totalRevenue}
+          總收益：${orders.reduce((sum: any, order: any) => sum + order.items.reduce((itemSum: any, item: any) => itemSum + (item.menuItem.price * item.quantity), 0), 0)}
         </p>
       </div>
 
@@ -42,7 +53,7 @@ export default async function AdminHistory() {
               {order.completedAt ? new Date(order.completedAt).toLocaleString() : '未記錄'}
             </div>
             <div className="space-y-3">
-              {order.items.map((item, index) => (
+              {order.items.map((item: any, index: any) => (
                 <div key={index}>
                   <div className="text-sm text-gray-500">品項</div>
                   <div>{item.menuItem.name}</div>
@@ -65,7 +76,7 @@ export default async function AdminHistory() {
               <div className="pt-3 border-t">
                 <div className="text-sm text-gray-500">總金額</div>
                 <div className="text-lg font-medium">
-                  ${order.items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0)}
+                  ${order.items.reduce((sum: any, item: any) => sum + item.menuItem.price * item.quantity, 0)}
                 </div>
               </div>
             </div>
@@ -89,7 +100,7 @@ export default async function AdminHistory() {
           </thead>
           <tbody>
             {orders.flatMap((order) =>
-              order.items.map((item, index) => (
+              order.items.map((item: any, index: any) => (
                 <tr key={`${order.id}-${index}`}>
                   <td className="border p-2 md:p-3">
                     <div>{order.id}</div>

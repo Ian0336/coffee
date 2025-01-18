@@ -27,4 +27,8 @@ RUN npx prisma generate
 EXPOSE 3000
 
 # 開發模式啟動
-CMD npm run dev
+# CMD npm run dev
+
+# 生產模式啟動
+RUN npm run build
+CMD npm run start

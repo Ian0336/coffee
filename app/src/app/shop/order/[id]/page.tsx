@@ -50,9 +50,9 @@ export default function OrderClient({ params }: any) {
     resolveParams();
   }, [params]);
 
-  function handleAddToCart() {
+  async function handleAddToCart() {
     if (!item) return
-    
+    console.log('handleAddToCart called at:', new Date().toISOString())
     dispatch({
       type: 'ADD_ITEM',
       payload: {

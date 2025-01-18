@@ -1,26 +1,10 @@
 'use client'
 // app/page.tsx
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
-// 取得菜單資料
-// async function getMenu() {
-// const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu`, {
-//   cache: 'no-cache',
-// })
-// if (!res.ok) throw new Error('Failed to fetch menu data')
-// return res.json()
-
-//   // 模擬資料
-//   // return [
-//   //   { id: '1', name: '美式咖啡', description: '香濃黑咖啡', price: 60 },
-//   //   { id: '2', name: '拿鐵', description: '牛奶與咖啡結合', price: 80 },
-//   // ]
-// }
-
-export default function Home() {
+export default function ShopPage() {
   const [menu, setMenu] = useState([])
-  // const menu = await getMenu()
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -34,30 +18,46 @@ export default function Home() {
   }, [])
 
   return (
-    <>
-      <h2 className="text-2xl font-bold mb-4">咖啡菜單</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {menu.map((item: any) => (
-          <div
-            key={item.id}
-            className="border rounded p-4 shadow-sm flex flex-col justify-between"
-          >
-            <div>
-              <h3 className="text-xl font-semibold">{item.name}</h3>
-              <p className="text-gray-500">{item.description}</p>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            咖啡菜單
+          </h2>
+          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+            精選咖啡，為您帶來美好的一天
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {menu.map((item: any) => (
+            <div
+              key={item.id}
+              className="group relative bg-white rounded-lg shadow-sm overflow-hidden transform transition duration-200 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {item.name}
+                </h3>
+                <p className="text-gray-500 mb-4 h-12">
+                  {item.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-gray-900">
+                    ${item.price}
+                  </span>
+                  <Link
+                    href={`/shop/order/${item.id}`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  >
+                    點餐
+                  </Link>
+                </div>
+              </div>
             </div>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="font-bold">${item.price}</span>
-              <Link
-                href={`/shop/order/${item.id}`}
-                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-              >
-                點餐
-              </Link>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   )
 }

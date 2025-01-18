@@ -30,7 +30,8 @@ const CartContext = createContext<{
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
-    case 'ADD_ITEM':
+    case 'ADD_ITEM': {
+      // 使用區塊作用域避免變量污染
       const existingItemIndex = state.items.findIndex(
         item => 
           item.menuId === action.payload.menuId && 
@@ -39,11 +40,25 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       )
       
       if (existingItemIndex > -1) {
-        const newItems = [...state.items]
-        newItems[existingItemIndex].quantity += action.payload.quantity
+        // 創建新的 items 陣列，避免直接修改 state
+        const newItems = state.items.map((item, index) => {
+          if (index === existingItemIndex) {
+            return {
+              ...item,
+              quantity: item.quantity + action.payload.quantity
+            }
+          }
+          return item
+        })
         return { ...state, items: newItems }
       }
-      return { ...state, items: [...state.items, action.payload] }
+      
+      // 如果是新項目，直接添加到陣列末尾
+      return { 
+        ...state, 
+        items: [...state.items, { ...action.payload }] 
+      }
+    }
 
     case 'REMOVE_ITEM':
       return {
@@ -79,4 +94,4 @@ export function useCart() {
     throw new Error('useCart must be used within a CartProvider')
   }
   return context
-} 
+}

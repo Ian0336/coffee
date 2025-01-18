@@ -3,12 +3,13 @@ import { useCart } from '@/contexts/CartContext'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useLiff } from '@/contexts/LiffContext'
 
 export default function CartPage() {
   const { state, dispatch } = useCart()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
+  const { userId, displayName } = useLiff()
   const total = state.items.reduce(
     (sum, item) => sum + item.menuItem.price * item.quantity,
     0
@@ -25,8 +26,8 @@ export default function CartPage() {
         },
         body: JSON.stringify({
           items: state.items,
-          userId: 'guest', // 可以根據需求修改
-          userName: 'guest',
+          userId: userId,
+          userName: displayName,
         }),
       })
 
@@ -36,7 +37,7 @@ export default function CartPage() {
 
       const order = await res.json()
       dispatch({ type: 'CLEAR_CART' })
-      // router.push(`/shop/order-success/${order.id}`)
+      router.push(`/shop/history`)
     } catch (error) {
       console.error('Submit order error:', error)
       alert('訂單提交失敗，請稍後再試')
@@ -54,7 +55,7 @@ export default function CartPage() {
       </div>
     )
   }
-
+  console.log('user', userId)
   return (
     <div className="max-w-2xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
@@ -111,7 +112,7 @@ export default function CartPage() {
               disabled={isLoading}
               className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
             >
-              {isLoading ? '處理中...' : '結帳'}
+              {isLoading ? '處理中...' : '送出'}
             </button>
           </div>
         </div>

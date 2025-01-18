@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata = {
   title: 'Coffee Ordering System',
   description: 'A modern coffee ordering system built with Next.js App Router',
+  icons: {
+    icon: '/coffee.png',
+  },
 }
 
 export default function RootLayout({

@@ -3,7 +3,8 @@ CREATE TABLE menu_items (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     price INTEGER NOT NULL,
-    has_milk BOOLEAN DEFAULT false
+    has_milk BOOLEAN DEFAULT false,
+    is_deleted BOOLEAN DEFAULT false
 );
 
 CREATE TABLE orders (
@@ -24,7 +25,7 @@ CREATE TABLE order_items (
     quantity INTEGER NOT NULL,
     price INTEGER NOT NULL,
     CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    CONSTRAINT fk_menu_item FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) 
+    CONSTRAINT fk_menu_item FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 );
 
 CREATE TABLE admin_session (

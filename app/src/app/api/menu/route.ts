@@ -8,15 +8,22 @@ export async function GET(request: Request) {
     const id = searchParams.get('id')
     
     if (id) {
-      const item = await prisma.menuItem.findUnique({
-        where: { id }
+      const item = await prisma.menuItem.findFirst({
+        where: { 
+          id,
+          isDeleted: false
+        }
       })
       if (!item) {
         return NextResponse.json({ error: 'Item not found' }, { status: 404 })
       }
       return NextResponse.json(item)
     } else {
-      const items = await prisma.menuItem.findMany()
+      const items = await prisma.menuItem.findMany({
+        where: {
+          isDeleted: false
+        }
+      })
       return NextResponse.json(items)
     }
   } catch (error) {
@@ -37,7 +44,8 @@ export async function POST(request: Request) {
         name,
         description,
         price: Number(price),
-        hasMilk: Boolean(hasMilk)
+        hasMilk: Boolean(hasMilk),
+        isDeleted: false
       }
     })
     return NextResponse.json(newItem, { status: 201 })
@@ -48,7 +56,33 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const { id } = await request.json()
-  await prisma.menuItem.delete({ where: { id } })
-  return NextResponse.json({ message: 'Item deleted' }, { status: 200 })
+  try {
+    const { id } = await request.json()
+    
+    // 檢查是否有相關的訂單項目
+    const orderItems = await prisma.orderItem.findFirst({
+      where: {
+        menuItemId: id
+      }
+    })
+
+    if (orderItems) {
+      // 如果有相關訂單，標記為已刪除
+      const updatedItem = await prisma.menuItem.update({
+        where: { id },
+        data: { isDeleted: true }
+      })
+      return NextResponse.json(updatedItem, { status: 200 })
+    } else {
+      // 如果沒有相關訂單，直接刪除
+      await prisma.menuItem.delete({ where: { id } })
+      return NextResponse.json({ message: 'Item deleted' }, { status: 200 })
+    }
+  } catch (error) {
+    console.error('Delete error:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete item' }, 
+      { status: 500 }
+    )
+  }
 }

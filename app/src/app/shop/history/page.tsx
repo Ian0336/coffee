@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLiff } from '@/contexts/LiffContext'
 
 type OrderItem = {
   menuItem: {
@@ -23,7 +24,7 @@ type Order = {
 export default function UserOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState('guest')
+  const { userId } = useLiff()
   const router = useRouter()
 
   useEffect(() => {

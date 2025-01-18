@@ -13,6 +13,7 @@ model MenuItem {
   description String?
   price       Int
   hasMilk     Boolean     @default(false) @map("has_milk")
+  isDeleted   Boolean     @default(false) @map("is_deleted")
   orderItems  OrderItem[]
 
   @@map("menu_items")
