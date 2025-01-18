@@ -34,10 +34,10 @@ export default function AdminLayout({
       }
           
       // 如果沒有存儲的 seed，要求輸入密碼
-      const password = window.prompt('請輸入管理員密碼:')
+      const password = window.prompt('請輸入管理員密碼:', '')
       console.log('password', password)
       if (!password) {
-        router.push('/')
+        router.push('/admin')
         return
       }
 
@@ -49,7 +49,7 @@ export default function AdminLayout({
 
       if (!res.ok) {
         alert('密碼錯誤！')
-        router.push('/')
+        router.push('/admin')
         return
       }
 
@@ -65,7 +65,7 @@ export default function AdminLayout({
   // 登出功能
   const handleLogout = () => {
     localStorage.removeItem('adminSeed')
-    router.push('/')
+    router.push('/admin')
   }
 
   if (!isAuthorized) {

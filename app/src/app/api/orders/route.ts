@@ -27,11 +27,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { items } = await request.json()
+    const { items, userId, userName } = await request.json()
     
-    const newOrder = await prisma.order.create({
+    const order = await prisma.order.create({
       data: {
         id: crypto.randomUUID(),
+        userId,
+        userName,
         status: 'pending',
         items: {
           create: items.map((item: any) => ({
@@ -51,10 +53,13 @@ export async function POST(request: Request) {
         }
       }
     })
-    
-    return NextResponse.json(newOrder, { status: 201 })
+
+    return NextResponse.json(order, { status: 201 })
   } catch (error) {
-    console.error('Database error:', error)
-    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+    console.error('Create order error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
+    )
   }
 }

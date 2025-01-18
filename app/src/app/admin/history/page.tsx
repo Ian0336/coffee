@@ -79,7 +79,7 @@ export default async function AdminHistory() {
           <thead>
             <tr className="bg-gray-50">
               <th className="border p-2 md:p-3">訂單編號</th>
-              <th className="border p-2 md:p-3">�單時間</th>
+              <th className="border p-2 md:p-3">訂單時間</th>
               <th className="border p-2 md:p-3">完成時間</th>
               <th className="border p-2 md:p-3">品項</th>
               <th className="border p-2 md:p-3">單價</th>
@@ -92,7 +92,15 @@ export default async function AdminHistory() {
               order.items.map((item, index) => (
                 <tr key={`${order.id}-${index}`}>
                   <td className="border p-2 md:p-3">
-                    {index === 0 ? order.id : ''}
+                    <div>{order.id}</div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(order.createdAt).toLocaleString()}
+                    </div>
+                    {order.userName && (
+                      <div className="text-sm text-gray-600">
+                        訂購人: {order.userName}
+                      </div>
+                    )}
                   </td>
                   <td className="border p-2 md:p-3">
                     {index === 0 ? new Date(order.createdAt).toLocaleString() : ''}

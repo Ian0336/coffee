@@ -14,9 +14,10 @@ export default function CartPage() {
     0
   )
 
-  async function handleCheckout() {
-    setIsLoading(true)
+  async function handleSubmitOrder() {
     try {
+
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -24,20 +25,22 @@ export default function CartPage() {
         },
         body: JSON.stringify({
           items: state.items,
+          userId: 'guest', // 可以根據需求修改
+          userName: 'guest',
         }),
       })
 
       if (!res.ok) {
-        throw new Error('下單失敗')
+        throw new Error('Failed to submit order')
       }
 
-      alert('訂單已送出！')
+      const order = await res.json()
       dispatch({ type: 'CLEAR_CART' })
-      router.push('/')
-    } catch (err) {
-      alert('下單失敗')
+      // router.push(`/shop/order-success/${order.id}`)
+    } catch (error) {
+      console.error('Submit order error:', error)
+      alert('訂單提交失敗，請稍後再試')
     } finally {
-      setIsLoading(false)
     }
   }
 
@@ -45,9 +48,9 @@ export default function CartPage() {
     return (
       <div className="text-center py-8">
         <p>購物車是空的</p>
-        <a href="/" className="text-blue-600 hover:underline">
+        <Link href="/shop" className="text-blue-600 hover:underline">
           返回點餐
-        </a>
+        </Link>
       </div>
     )
   }
@@ -98,13 +101,13 @@ export default function CartPage() {
           <div className="text-xl font-bold">總計: ${total}</div>
           <div className="flex gap-4">
             <Link
-              href="/"
+              href="/shop"
               className="px-6 py-2 text-blue-600 hover:text-blue-800"
             >
               繼續購物
             </Link>
             <button
-              onClick={handleCheckout}
+              onClick={handleSubmitOrder}
               disabled={isLoading}
               className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
             >

@@ -8,6 +8,8 @@ CREATE TABLE menu_items (
 
 CREATE TABLE orders (
     id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50),
+    user_name VARCHAR(100),
     status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE
@@ -22,7 +24,7 @@ CREATE TABLE order_items (
     quantity INTEGER NOT NULL,
     price INTEGER NOT NULL,
     CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    CONSTRAINT fk_menu_item FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
+    CONSTRAINT fk_menu_item FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) 
 );
 
 CREATE TABLE admin_session (

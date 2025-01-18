@@ -64,7 +64,7 @@ export default function OrderClient({ params }: any) {
       },
     })
     
-    router.push('/cart')
+    router.push('/shop/cart')
   }
 
   if (!item) {

@@ -113,6 +113,11 @@ export default function AdminOrders() {
                 <p className="text-sm text-gray-500">
                   訂單時間: {new Date(order.createdAt).toLocaleString()}
                 </p>
+                {order.userName && (
+                  <p className="text-sm text-gray-600">
+                    訂購人: {order.userName}
+                  </p>
+                )}
               </div>
               <div className="flex gap-2">
                 <div className="flex-[0.8]">
