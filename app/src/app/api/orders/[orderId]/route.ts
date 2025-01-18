@@ -25,7 +25,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedOrder, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Database error:', error);
     if (error.code === 'P2025') {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
@@ -57,7 +57,7 @@ export async function DELETE(
     ]);
 
     return NextResponse.json({ message: 'Order deleted' }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete order error:', error);
     return NextResponse.json(
       { message: 'Failed to delete order' },

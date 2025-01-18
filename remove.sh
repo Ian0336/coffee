@@ -7,8 +7,8 @@ docker compose down
 docker images | grep -E "(coffee)" | awk '{print $3}' | xargs docker rmi -f
 
 # 移除由 docker-compose.yml 生成的所有卷
-# docker volume ls | grep -E "(fileseedshare_db_data|fileseedshare_shared_data)" | awk '{print $2}' | xargs docker volume rm -f
-docker volume rm $(docker volume ls -q) 
+docker volume ls | grep -E "(coffee_postgres_data)" | awk '{print $2}' | xargs docker volume rm -f
+# docker volume rm $(docker volume ls -q) 
 
 # 重建並啟動所有服務
 # docker compose up --build

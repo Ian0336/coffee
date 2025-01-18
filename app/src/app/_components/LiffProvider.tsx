@@ -7,16 +7,16 @@ import { useRouter } from 'next/navigation';
 
 const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [userId, setUserId] = useState<string>('none');
-  const [displayName, setDisplayName] = useState<string>('none');
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('/coffee.png');
+  const [userId, setUserId] = useState<string | null>('noUser');
+  const [displayName, setDisplayName] = useState<string | null>('noUser');
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>('/coffee.png');
 
   useEffect(() => {
     const initializeLiff = async () => {
       try {
         console.log(process.env.NEXT_PUBLIC_LIFF_ID);
         console.log(process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
-        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID});
+        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID || '', withLoginOnExternalBrowser: true});
         console.log('LIFF initialized successfully');
 
         if (liff.isLoggedIn()) {

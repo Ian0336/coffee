@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  context: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = context.params;
+    const { userId } = await context.params;
     
     const orders = await prisma.order.findMany({
       where: {

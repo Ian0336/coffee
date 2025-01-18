@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         //     { status: 500 }
         //   )
         // }
-        return NextResponse.json({ seed: session.seed })
+        return NextResponse.json({ seed: session?.seed || 'noSession' })
       }
       
       return NextResponse.json(

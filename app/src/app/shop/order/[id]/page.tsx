@@ -6,7 +6,7 @@ import { useCart } from '@/contexts/CartContext'
 import { useRouter } from 'next/navigation'
 
 async function getMenuItem(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/menu?id=${id}`, {
+  const res = await fetch(`/api/menu?id=${id}`, {
     cache: 'no-cache',
   })
   if (!res.ok) {
