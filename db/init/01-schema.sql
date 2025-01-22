@@ -36,7 +36,7 @@ CREATE TABLE admin_session (
 
 -- 插入初始菜單資料
 INSERT INTO menu_items (id, name, description, price, has_milk) VALUES
-    ('1', '美式咖啡', '香濃黑咖啡', 60, false),
+    ('1', '手沖咖啡', '香濃黑咖啡', 60, false),
     ('2', '拿鐵', '牛奶與咖啡結合', 80, true); 
 
 -- 插入初始 seed

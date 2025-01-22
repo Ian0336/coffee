@@ -14,8 +14,8 @@ const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initializeLiff = async () => {
       try {
-        console.log(process.env.NEXT_PUBLIC_LIFF_ID);
-        console.log(process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
+        // console.log(process.env.NEXT_PUBLIC_LIFF_ID);
+        // console.log(process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
         await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID || '', withLoginOnExternalBrowser: true});
         console.log('LIFF initialized successfully');
 
@@ -27,7 +27,7 @@ const LiffProvider = ({ children }: { children: React.ReactNode }) => {
           console.log(profile);
         }else{
           //TEST
-          // router.push('/');
+          router.push('/');
         }
       } catch (error) {
         console.error('LIFF initialization failed', error);

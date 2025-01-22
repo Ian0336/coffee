@@ -32,16 +32,32 @@ export default function AdminOrders() {
 
   function CompleteButton({ orderId }: { orderId: string }) {
     const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
   
     async function handleComplete() {
       setIsLoading(true)
       try {
+        const sessionKey = localStorage.getItem('adminSeed')
+        if (!sessionKey) {
+          alert('請先登入')
+          router.push('/admin')
+          return
+        }
+
         const res = await fetch(`/api/orders/${orderId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'completed' }),
+          body: JSON.stringify({ 
+            status: 'completed',
+            sessionKey 
+          }),
         })
         if (!res.ok) {
+          if (res.status === 401) {
+            alert('未授權，請重新登入')
+            router.push('/admin')
+            return
+          }
           throw new Error('Failed to complete order')
         }
         alert('訂單已完成！')
@@ -65,6 +81,8 @@ export default function AdminOrders() {
   }
   function CancelButton({ orderId }: { orderId: string }) {
     const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
+
     async function handleCancel() {
       setIsLoading(true)
       if (!window.confirm('確定要取消此訂單嗎？')) {
@@ -72,10 +90,24 @@ export default function AdminOrders() {
         return
       }
       try {
+        const sessionKey = localStorage.getItem('adminSeed')
+        if (!sessionKey) {
+          alert('請先登入')
+          router.push('/admin')
+          return
+        }
+
         const res = await fetch(`/api/orders/${orderId}`, {
           method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionKey }),
         })
         if (!res.ok) {
+          if (res.status === 401) {
+            alert('未授權，請重新登入')
+            router.push('/admin')
+            return
+          }
           throw new Error('取消訂單失敗')
         }
         alert('訂單已取消！')

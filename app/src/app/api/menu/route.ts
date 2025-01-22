@@ -1,6 +1,7 @@
 // app/api/menu/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { verifyAdminSession } from '@/lib/auth'
 
 export async function GET(request: Request) {
   try {
@@ -37,7 +38,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { name, description, price, hasMilk } = await request.json()
+    const { name, description, price, hasMilk, sessionKey } = await request.json()
+    
+    // 驗證管理員權限
+    if (!await verifyAdminSession(sessionKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const newItem = await prisma.menuItem.create({
       data: {
         id: Date.now().toString(),
@@ -51,15 +61,25 @@ export async function POST(request: Request) {
     return NextResponse.json(newItem, { status: 201 })
   } catch (error) {
     console.error('Database error:', error)
-    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Database error' },
+      { status: 500 }
+    )
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json()
+    const { id, sessionKey } = await request.json()
     
-    // 檢查是否有相關的訂單項目
+    // 驗證管理員權限
+    if (!await verifyAdminSession(sessionKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const orderItems = await prisma.orderItem.findFirst({
       where: {
         menuItemId: id
@@ -67,21 +87,22 @@ export async function DELETE(request: Request) {
     })
 
     if (orderItems) {
-      // 如果有相關訂單，標記為已刪除
       const updatedItem = await prisma.menuItem.update({
         where: { id },
         data: { isDeleted: true }
       })
       return NextResponse.json(updatedItem, { status: 200 })
     } else {
-      // 如果沒有相關訂單，直接刪除
       await prisma.menuItem.delete({ where: { id } })
-      return NextResponse.json({ message: 'Item deleted' }, { status: 200 })
+      return NextResponse.json(
+        { message: 'Item deleted' },
+        { status: 200 }
+      )
     }
   } catch (error) {
     console.error('Delete error:', error)
     return NextResponse.json(
-      { error: 'Failed to delete item' }, 
+      { error: 'Failed to delete item' },
       { status: 500 }
     )
   }

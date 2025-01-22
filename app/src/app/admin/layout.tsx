@@ -1,6 +1,6 @@
 'use client'
 // app/admin/layout.tsx
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Loading from '../loading'
 
@@ -10,27 +10,33 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isAuthorized, setIsAuthorized] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
+      setIsLoading(true)
       const storedSeed = localStorage.getItem('adminSeed')
       console.log('storedSeed', storedSeed)
 
       if (storedSeed) {
-      // 驗證存儲的 seed 是否有效
+        // 驗證存儲的 seed 是否有效
         const res = await fetch('/api/admin/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionKey: storedSeed })
         })
-          if(res.ok) {
-            setIsAuthorized(true)
-            return
-          }else{
-            localStorage.removeItem('adminSeed')
-            console.log('remove adminSeed')
-          }
+        if(res.ok) {
+          setIsAuthorized(true)
+          setIsLoading(false)
+          return
+        } else {
+          localStorage.removeItem('adminSeed')
+          console.log('remove adminSeed')
+          router.push('/admin')
+          return
+        }
       }
           
       // 如果沒有存儲的 seed，要求輸入密碼
@@ -56,11 +62,11 @@ export default function AdminLayout({
       const { seed } = await res.json()
       localStorage.setItem('adminSeed', seed)
       setIsAuthorized(true)
-      return
+      setIsLoading(false)
     }
 
     checkAuth()
-  }, [])
+  }, [pathname])
 
   // 登出功能
   const handleLogout = () => {
@@ -68,12 +74,16 @@ export default function AdminLayout({
     router.push('/admin')
   }
 
+  if (isLoading) {
+    return <Loading />
+  }
+
   if (!isAuthorized) {
     return null
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col sm:flex-row">
       {/* 手機版頂部導航 */}
       <div className="sm:hidden bg-white border-b">
         <div className="p-4 flex justify-between items-center">

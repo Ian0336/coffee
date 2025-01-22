@@ -30,6 +30,39 @@ export default function AdminMenu() {
     }
     fetchMenu()
   }, [toggle])
+
+  const handleDelete = async (id: string) => {
+    if (confirm('確定要刪除此品項嗎？')) {
+      try {
+        const sessionKey = localStorage.getItem('adminSeed')
+        if (!sessionKey) {
+          alert('請先登入')
+          router.push('/admin')
+          return
+        }
+
+        const res = await fetch(`/api/menu`, {
+          method: 'DELETE',
+          body: JSON.stringify({ 
+            id,
+            sessionKey 
+          })
+        })
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert('未授權，請重新登入')
+            router.push('/admin')
+            return
+          }
+          throw new Error('刪除失敗')
+        }
+        alert('已刪除品項')
+        setToggle(!toggle)
+      } catch (err) {
+        alert('刪除失敗')
+      }
+    }
+  }
   
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -43,20 +76,7 @@ export default function AdminMenu() {
               <span>{item.name} - ${item.price}</span>
               <button
                 onClick={async () => {
-                  if (confirm('確定要刪除此品項嗎？')) {
-                    try {
-                      console.log(item.id)
-                      const res = await fetch(`/api/menu`, {
-                        method: 'DELETE',
-                        body: JSON.stringify({ id: item.id })
-                      })
-                      if (!res.ok) throw new Error('刪除失敗')
-                      alert('已刪除品項')
-                      setToggle(!toggle)
-                    } catch (err) {
-                      alert('刪除失敗')
-                    }
-                  }
+                  await handleDelete(item.id)
                 }}
                 className="ml-4 px-2 py-1 text-sm text-red-600 hover:text-red-800"
               >
@@ -85,12 +105,30 @@ function NewMenuItemForm({ toggle, setToggle }: { toggle: boolean, setToggle: (t
     e.preventDefault()
     setLoading(true)
     try {
+      const sessionKey = localStorage.getItem('adminSeed')
+      if (!sessionKey) {
+        alert('請先登入')
+        router.push('/admin')
+        return
+      }
+
       const res = await fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, price, hasMilk }),
+        body: JSON.stringify({ 
+          name, 
+          description, 
+          price, 
+          hasMilk,
+          sessionKey 
+        }),
       })
       if (!res.ok) {
+        if (res.status === 401) {
+          alert('未授權，請重新登入')
+          router.push('/admin')
+          return
+        }
         throw new Error('Failed to create new menu item')
       }
       alert('已新增品項！')

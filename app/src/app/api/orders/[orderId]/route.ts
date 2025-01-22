@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { verifyAdminSession } from '@/lib/auth'
 
 export async function PATCH(
   request: Request,
@@ -7,7 +8,15 @@ export async function PATCH(
 ) {
   try {
     const { orderId } = await context.params;
-    const { status } = await request.json();
+    const { status, sessionKey } = await request.json();
+
+    // 驗證管理員權限
+    if (!await verifyAdminSession(sessionKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
@@ -43,14 +52,20 @@ export async function DELETE(
 ) {
   try {
     const { orderId } = await context.params;
+    const { sessionKey } = await request.json();
+
+    // 驗證管理員權限
+    if (!await verifyAdminSession(sessionKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     
-    // 使用 transaction 確保原子性操作
     await prisma.$transaction([
-      // 先刪除關聯的 order items
       prisma.orderItem.deleteMany({
         where: { orderId }
       }),
-      // 再刪除訂單本身
       prisma.order.delete({
         where: { id: orderId }
       })

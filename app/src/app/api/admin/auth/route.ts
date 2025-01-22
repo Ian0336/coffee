@@ -1,35 +1,16 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import crypto from 'crypto'
+import { checkAdminSession } from '@/lib/auth'
 
 // 生成新的 seed
 function generateSeed() {
   return crypto.randomBytes(32).toString('hex')
 }
 
-// 檢查是否需要更新 seed
-async function checkAndUpdateSeed() {
-  let session = await prisma.adminSession.findFirst()
-  console.log('session', session)
-  if (!session) return null
 
-  const now = new Date()
-  const updateTime = new Date(session.updateTime)
-  const hoursDiff = (now.getTime() - updateTime.getTime()) / (1000 * 60 * 60)
 
-  if (hoursDiff > 12) {
-    const newSeed = generateSeed()
-    return await prisma.adminSession.update({
-      where: { id: session.id },
-      data: {
-        seed: newSeed,
-        updateTime: now
-      }
-    })
-  }
   
-  return session
-}
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +18,7 @@ export async function POST(request: Request) {
     console.log('password', password, process.env.NEXT_PUBLIC_ADMIN_PASSWORD)
     if(password){
         if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-          const session = await checkAndUpdateSeed()
+          const session = await checkAdminSession()
           // if (!session) {
         //   return NextResponse.json(
         //     { error: 'Session not found' },
@@ -53,7 +34,7 @@ export async function POST(request: Request) {
       )
     }
     if(sessionKey){
-      const session = await checkAndUpdateSeed()
+      const session = await checkAdminSession()
       if (!session) {
         return NextResponse.json(
           { error: 'Session not found' },

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLiff } from '@/contexts/LiffContext'
+import Loading from '@/app/loading'
 
 type OrderItem = {
   menuItem: {
@@ -45,7 +46,7 @@ export default function UserOrders() {
   }, [userId])
 
   if (loading) {
-    return <div className="p-4">載入中...</div>
+    return <Loading />
   }
 
   if (orders.length === 0) {
