@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { notFound } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
 import { useRouter } from 'next/navigation'
+import Loading from '@/app/loading'
 
 async function getMenuItem(id: string) {
   const res = await fetch(`/api/menu?id=${id}`, {
@@ -68,11 +69,11 @@ export default function OrderClient({ params }: any) {
   }
 
   if (!item) {
-    return <div>loading...</div>
+    return <Loading />
   }
 
   return (
-    <div className="max-w-md mx-auto border p-4 rounded">
+    <div className="max-w-md mx-auto border p-4 rounded mt-10">
       <h2 className="text-2xl font-bold mb-4">點餐 - {item.name}</h2>
       <p className="mb-2">價格：${item.price}</p>
 

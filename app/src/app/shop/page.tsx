@@ -2,9 +2,10 @@
 // app/page.tsx
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
+import Loading from '../loading'
 export default function ShopPage() {
   const [menu, setMenu] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -13,6 +14,7 @@ export default function ShopPage() {
       })
       if (!res.ok) throw new Error('Failed to fetch menu data')
       setMenu(await res.json())
+      setIsLoading(false)
     }
     fetchMenu()
   }, [])
@@ -28,7 +30,7 @@ export default function ShopPage() {
             精選咖啡，為您帶來美好的一天
           </p>
         </div>
-
+        {isLoading ? <Loading /> : <></>}
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {menu.map((item: any) => (
             <div

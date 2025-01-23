@@ -109,7 +109,7 @@ export default function AdminLayout({
       </div>
 
       {/* 桌面版側邊欄 */}
-      <div className="hidden sm:flex h-screen">
+      <div className="hidden sm:flex h-screen w-full">
         <aside className="w-64 bg-white border-r p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">後台管理</h2>
