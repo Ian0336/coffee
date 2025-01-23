@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLiff } from '@/contexts/LiffContext'
-
+import liff from '@line/liff'
 export default function CartPage() {
   const { state, dispatch } = useCart()
   const [isLoading, setIsLoading] = useState(false)
@@ -17,7 +17,11 @@ export default function CartPage() {
 
   async function handleSubmitOrder() {
     try {
-
+      setIsLoading(true)
+      if (!userId || !displayName) {
+        alert('請先登入 LINE')
+        return
+      }
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -26,22 +30,23 @@ export default function CartPage() {
         },
         body: JSON.stringify({
           items: state.items,
-          userId: userId,
+          userId,
           userName: displayName,
+          accessToken: await liff.getAccessToken()
         }),
       })
 
       if (!res.ok) {
-        throw new Error('Failed to submit order')
+        throw new Error('Failed to create order')
       }
 
-      const order = await res.json()
       dispatch({ type: 'CLEAR_CART' })
-      router.push(`/shop/history`)
-    } catch (error) {
-      console.error('Submit order error:', error)
-      alert('訂單提交失敗，請稍後再試')
+      router.push('/shop/history')
+      alert('訂單已送出！')
+    } catch (err) {
+      alert('送出訂單失敗')
     } finally {
+      setIsLoading(false)
     }
   }
 
