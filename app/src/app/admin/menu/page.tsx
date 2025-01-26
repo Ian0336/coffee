@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 // app/admin/menu/page.tsx
@@ -65,26 +65,37 @@ export default function AdminMenu() {
   }
   
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <h1 className="text-xl font-bold mb-4">編輯菜單</h1>
+    <div className="p-4 md:p-6 lg:p-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">編輯菜單</h1>
       <NewMenuItemForm toggle={toggle} setToggle={setToggle} />
-      <div className="mt-4">
-        <h2 className="font-semibold mb-2">現有品項</h2>
-        <ul className="list-disc list-inside">
-          {menu.map((item: any) => (
-            <li key={item.id} className="flex items-center justify-between">
-              <span>{item.name} - ${item.price}</span>
-              <button
-                onClick={async () => {
-                  await handleDelete(item.id)
-                }}
-                className="ml-4 px-2 py-1 text-sm text-red-600 hover:text-red-800"
-              >
-                刪除
-              </button>
-            </li>
-          ))}
-        </ul>
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">現有品項</h2>
+        <div className="bg-white rounded-lg shadow">
+          <ul className="divide-y divide-gray-200">
+            {menu.map((item: any) => (
+              <li key={item.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4">
+                    <span className="font-medium text-gray-900">{item.name}</span>
+                    <span className="text-sm text-gray-500">系列：{item.series}</span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-4">
+                    <span className="text-sm text-gray-500">{item.description}</span>
+                    <span className="font-medium text-blue-600">${item.price}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    await handleDelete(item.id)
+                  }}
+                  className="ml-4 px-3 py-1.5 text-sm text-red-600 hover:text-red-800 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                >
+                  刪除
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   )
@@ -93,102 +104,206 @@ export default function AdminMenu() {
 
 // import { useState } from 'react'
 
-function NewMenuItemForm({ toggle, setToggle }: { toggle: boolean, setToggle: (toggle: boolean) => void }) {
-  const router = useRouter()
+function NewMenuItemForm({ toggle, setToggle }: any) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [price, setPrice] = useState<number>(0)
+  const [price, setPrice] = useState(0)
   const [hasMilk, setHasMilk] = useState(false)
+  const [series, setSeries] = useState('')
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [existingSeries, setExistingSeries] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // 獲取現有的所有系列
+  useEffect(() => {
+    const fetchSeries = async () => {
+      try {
+        const res = await fetch('/api/menu')
+        if (!res.ok) throw new Error('Failed to fetch menu')
+        const items = await res.json()
+        const uniqueSeries = Array.from(new Set(items.map((item: any) => item.series)))
+        setExistingSeries(uniqueSeries as string[])
+        setSuggestions(uniqueSeries as string[])
+      } catch (err) {
+        console.error('Failed to fetch series:', err)
+      }
+    }
+    fetchSeries()
+  }, [toggle])
+
+  // 處理輸入變化
+  useEffect(() => {
+    console.log('value', series.trim())
+    if (series.trim()) {
+      // 檢查輸入值是否與現有系列的開頭相符
+      const filtered = existingSeries.filter(s => 
+        s.toLowerCase().startsWith(series.toLowerCase())
+      )
+      setSuggestions(filtered)
+      setShowSuggestions(filtered.length > 0)
+    } else {
+      // 當輸入為空時顯示所有系列
+      setSuggestions(existingSeries)
+    }
+  }, [series, existingSeries])
+
+  // 點擊建議項目
+  const handleSuggestionClick = (value: string) => {
+    console.log('value', value)
+    setSeries(value)
+    setShowSuggestions(false)
+  }
+
+  // 點擊外部時關閉建議列表
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!series.trim()) {
+      alert('請輸入系列名稱')
+      return
+    }
     setLoading(true)
     try {
       const sessionKey = localStorage.getItem('adminSeed')
       if (!sessionKey) {
         alert('請先登入')
-        router.push('/admin')
         return
       }
 
       const res = await fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name, 
-          description, 
-          price, 
+        body: JSON.stringify({
+          name,
+          description,
+          price,
           hasMilk,
-          sessionKey 
+          series: series.trim(),
+          sessionKey
         }),
       })
+
       if (!res.ok) {
-        if (res.status === 401) {
-          alert('未授權，請重新登入')
-          router.push('/admin')
-          return
-        }
-        throw new Error('Failed to create new menu item')
+        throw new Error('Failed to add menu item')
       }
-      alert('已新增品項！')
+
+      setName('')
+      setDescription('')
+      setPrice(0)
+      setHasMilk(false)
+      setSeries('')
       setToggle(!toggle)
+      alert('新增成功！')
     } catch (err) {
       alert('新增失敗')
     } finally {
       setLoading(false)
     }
   }
-
+  // console.log('suggestions', suggestions)
+  // console.log('showSuggestions', showSuggestions)
   return (
-    <form onSubmit={handleSubmit} className="border p-4 mb-4">
-      <h3 className="font-semibold mb-2">新增品項</h3>
-      <div className="mb-2">
-        <label className="block">品名</label>
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800">新增品項</h3>
+      
+      {/* 系列輸入區域 */}
+      <div className="mb-6 relative" ref={inputRef}>
+        <label className="block font-medium mb-2 text-gray-700">系列</label>
         <input
           type="text"
-          className="border p-1 rounded w-full"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
+          value={series}
+          onChange={(e) => setSeries(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+          placeholder="輸入或選擇系列名稱"
+          onClick={() => setShowSuggestions(true)}
         />
+        
+        {/* 建議列表 */}
+        {showSuggestions && suggestions.length > 0 && (
+          <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-md mt-1 shadow-lg max-h-60 overflow-auto">
+            {suggestions.map((suggestion, index) => (
+              <li
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-      <div className="mb-2">
-        <label className="block">描述</label>
-        <input
-          type="text"
-          className="border p-1 rounded w-full"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+
+      <div className="space-y-4">
+        <div>
+          <label className="block font-medium mb-2 text-gray-700">品名</label>
+          <input
+            type="text"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-2 text-gray-700">描述</label>
+          <input
+            type="text"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="flex items-center gap-2 text-gray-700">
+            <input
+              type="checkbox"
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              checked={hasMilk}
+              onChange={(e) => setHasMilk(e.target.checked)}
+            />
+            <span className="font-medium">是否含牛奶</span>
+          </label>
+        </div>
+
+        <div>
+          <label className="block font-medium mb-2 text-gray-700">價格</label>
+          <input
+            type="number"
+            className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            min={0}
+            required
+          />
+        </div>
       </div>
-      <div className="mb-2">
-        <label className="block">是否含牛奶</label>
-        <input
-          type="checkbox"
-          className="border p-1 rounded"
-          checked={hasMilk}
-          onChange={(e) => setHasMilk(e.target.checked)}
-        />
+
+      <div className="mt-6">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 disabled:opacity-50 transition-colors"
+        >
+          {loading ? '新增中...' : '新增品項'}
+        </button>
       </div>
-      <div className="mb-2">
-        <label className="block">價格</label>
-        <input
-          type="number"
-          className="border p-1 rounded"
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          min={0}
-          required
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
-      >
-        {loading ? '新增中...' : '新增品項'}
-      </button>
     </form>
   )
 }

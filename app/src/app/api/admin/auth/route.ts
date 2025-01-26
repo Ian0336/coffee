@@ -8,23 +8,22 @@ function generateSeed() {
   return crypto.randomBytes(32).toString('hex')
 }
 
-
-
-  
-
 export async function POST(request: Request) {
   try {
     const { password, sessionKey } = await request.json()
-    console.log('password', password, process.env.NEXT_PUBLIC_ADMIN_PASSWORD)
+
     if(password){
-        if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-          const session = await checkAdminSession()
-          // if (!session) {
-        //   return NextResponse.json(
-        //     { error: 'Session not found' },
-        //     { status: 500 }
-        //   )
-        // }
+      // 從資料庫獲取管理員 session
+      const adminSession = await prisma.adminSession.findFirst()
+      if (!adminSession) {
+        return NextResponse.json(
+          { error: 'Admin session not found' },
+          { status: 500 }
+        )
+      }
+
+      if (password === adminSession.password) {
+        const session = await checkAdminSession()
         return NextResponse.json({ seed: session?.seed || 'noSession' })
       }
       
@@ -33,6 +32,7 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
+
     if(sessionKey){
       const session = await checkAdminSession()
       if (!session) {

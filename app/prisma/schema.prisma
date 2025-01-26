@@ -14,6 +14,7 @@ model MenuItem {
   price       Int
   hasMilk     Boolean     @default(false) @map("has_milk")
   isDeleted   Boolean     @default(false) @map("is_deleted")
+  series      String      @default("其他")
   orderItems  OrderItem[]
 
   @@map("menu_items")
@@ -49,6 +50,7 @@ model AdminSession {
   id         Int      @id @default(autoincrement())
   seed       String
   updateTime DateTime @default(now()) @map("update_time")
+  password   String   @default("1234")
 
   @@map("admin_session")
 } 

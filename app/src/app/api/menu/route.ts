@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { name, description, price, hasMilk, sessionKey } = await request.json()
+    const { name, description, price, hasMilk, series, sessionKey } = await request.json()
     
     // 驗證管理員權限
     if (!await verifyAdminSession(sessionKey)) {
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         description,
         price: Number(price),
         hasMilk: Boolean(hasMilk),
+        series,
         isDeleted: false
       }
     })
