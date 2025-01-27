@@ -2,8 +2,28 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+// 定義訂單項目的型別
+type OrderItem = {
+  id: string
+  price: number
+  quantity: number
+  ice: string
+  milkRatio?: string
+  menuItem: {
+    name: string
+  }
+}
+
+// 定義訂單的型別
+type Order = {
+  id: string
+  userName: string
+  createdAt: string
+  items: OrderItem[]
+}
+
 export default function AdminOrders() {
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -139,7 +159,7 @@ export default function AdminOrders() {
     <div className="p-4 md:p-6 lg:p-8">
       <h1 className="text-xl md:text-2xl font-bold mb-4">未完成訂單</h1>
       <div className="space-y-4">
-        {orders.map((order) => (
+        {orders.map((order: Order) => (
           <div key={order.id} className="border rounded-lg p-3 md:p-4 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
               <div className="space-y-1">
@@ -153,7 +173,9 @@ export default function AdminOrders() {
                   </p>
                 )}
                 <p className="text-sm text-gray-600">
-                  總金額: ${order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                  總金額: ${order.items.reduce((sum: number, item) => 
+                    sum + item.price * item.quantity, 0
+                  )}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -167,7 +189,7 @@ export default function AdminOrders() {
             </div>
 
             <div className="block sm:hidden space-y-3">
-              {order.items.map((item: any, index: number) => (
+              {order.items.map((item: OrderItem, index: number) => (
                 <div key={index} className="border rounded p-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -196,7 +218,7 @@ export default function AdminOrders() {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.items.map((item: any, index: number) => (
+                  {order.items.map((item: OrderItem, index: number) => (
                     <tr key={index} className="border-t">
                       <td className="p-2">{item.menuItem?.name}</td>
                       <td className="p-2">
