@@ -105,6 +105,9 @@ export default function AdminLayout({
           <button onClick={() => router.push('/admin/menu')} className="whitespace-nowrap px-4 py-2 text-blue-600 hover:bg-blue-50 rounded">
             編輯菜單
           </button>
+          <button onClick={() => router.push('/admin/settings')} className="whitespace-nowrap px-4 py-2 text-blue-600 hover:bg-blue-50 rounded">
+            修改密碼
+          </button>
         </nav>
       </div>
 

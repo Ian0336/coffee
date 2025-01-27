@@ -152,6 +152,9 @@ export default function AdminOrders() {
                     訂購人: {order.userName}
                   </p>
                 )}
+                <p className="text-sm text-gray-600">
+                  總金額: ${order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                </p>
               </div>
               <div className="flex gap-2">
                 <div className="flex-[0.8]">
@@ -166,10 +169,17 @@ export default function AdminOrders() {
             <div className="block sm:hidden space-y-3">
               {order.items.map((item: any, index: number) => (
                 <div key={index} className="border rounded p-3">
-                  <div className="font-medium">{item.menuItem?.name}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    <div>客製化：{item.ice}{item.milkRatio && `, 牛奶: ${item.milkRatio}`}</div>
-                    <div>數量：{item.quantity}</div>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.menuItem?.name}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <div>客製化：{item.ice}{item.milkRatio && `, 牛奶: ${item.milkRatio}`}</div>
+                        <div className="flex justify-between">
+                          <span>數量：{item.quantity}</span>
+                          <span className="font-medium">金額：${item.price * item.quantity}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -179,9 +189,10 @@ export default function AdminOrders() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left p-2">品項</th>
-                    <th className="text-left p-2">客製化</th>
-                    <th className="text-left p-2 w-20">數量</th>
+                    <th className="text-left p-2 w-1/3">品項</th>
+                    <th className="text-left p-2 w-1/3">客製化</th>
+                    <th className="text-center p-2 w-16">數量</th>
+                    <th className="text-right p-2 w-24">金額</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,7 +203,8 @@ export default function AdminOrders() {
                         冰塊: {item.ice}
                         {item.milkRatio && `, 牛奶: ${item.milkRatio}`}
                       </td>
-                      <td className="p-2">{item.quantity}</td>
+                      <td className="p-2 text-center">{item.quantity}</td>
+                      <td className="p-2 text-right">${item.price * item.quantity}</td>
                     </tr>
                   ))}
                 </tbody>
