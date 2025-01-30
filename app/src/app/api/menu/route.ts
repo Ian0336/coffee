@@ -108,3 +108,36 @@ export async function DELETE(request: Request) {
     )
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const { id, name, description, price, hasMilk, series, sessionKey } = await request.json()
+
+    // 驗證管理員 session
+    if (!await verifyAdminSession(sessionKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const updatedItem = await prisma.menuItem.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        price,
+        hasMilk,
+        series
+      }
+    })
+
+    return NextResponse.json(updatedItem)
+  } catch (error) {
+    console.error('Update menu item error:', error)
+    return NextResponse.json(
+      { error: 'Failed to update menu item' },
+      { status: 500 }
+    )
+  }
+}

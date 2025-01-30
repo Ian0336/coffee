@@ -13,10 +13,20 @@ import { useRouter } from 'next/navigation'
 //   return res.json()
 // }
 
+type MenuItem = {
+  id: string
+  name: string
+  description: string
+  price: number
+  hasMilk: boolean
+  series: string
+}
+
 export default function AdminMenu() {
   const router = useRouter()
-  const [menu, setMenu] = useState([])
+  const [menu, setMenu] = useState<MenuItem[]>([])
   const [toggle, setToggle] = useState(false)
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -63,6 +73,41 @@ export default function AdminMenu() {
       }
     }
   }
+
+  const handleEdit = async (item: MenuItem) => {
+    try {
+      const sessionKey = localStorage.getItem('adminSeed')
+      if (!sessionKey) {
+        alert('請先登入')
+        router.push('/admin')
+        return
+      }
+
+      const res = await fetch(`/api/menu`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ...item,
+          sessionKey 
+        })
+      })
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert('未授權，請重新登入')
+          router.push('/admin')
+          return
+        }
+        throw new Error('更新失敗')
+      }
+      
+      alert('已更新品項')
+      setEditingItem(null)
+      setToggle(!toggle)
+    } catch (err) {
+      alert('更新失敗')
+    }
+  }
   
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-4xl mx-auto">
@@ -72,26 +117,106 @@ export default function AdminMenu() {
         <h2 className="text-xl font-semibold mb-4 text-gray-700">現有品項</h2>
         <div className="bg-white rounded-lg shadow">
           <ul className="divide-y divide-gray-200">
-            {menu.map((item: any) => (
-              <li key={item.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4">
-                    <span className="font-medium text-gray-900">{item.name}</span>
-                    <span className="text-sm text-gray-500">系列：{item.series}</span>
+            {menu.map((item: MenuItem) => (
+              <li key={item.id} className="p-4 hover:bg-gray-50">
+                {editingItem?.id === item.id ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">品名</label>
+                        <input
+                          type="text"
+                          value={editingItem.name}
+                          onChange={(e) => setEditingItem({...editingItem, name: e.target.value})}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">系列</label>
+                        <input
+                          type="text"
+                          value={editingItem.series}
+                          onChange={(e) => setEditingItem({...editingItem, series: e.target.value})}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                      <input
+                        type="text"
+                        value={editingItem.description}
+                        onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
+                        className="w-full px-3 py-2 border rounded-md"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">價格</label>
+                        <input
+                          type="number"
+                          value={editingItem.price}
+                          onChange={(e) => setEditingItem({...editingItem, price: Number(e.target.value)})}
+                          className="w-32 px-3 py-2 border rounded-md"
+                          min={0}
+                        />
+                      </div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={editingItem.hasMilk}
+                          onChange={(e) => setEditingItem({...editingItem, hasMilk: e.target.checked})}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <span className="text-sm font-medium text-gray-700">含牛奶</span>
+                      </label>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => setEditingItem(null)}
+                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={() => handleEdit(editingItem)}
+                        className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                      >
+                        儲存
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center gap-4">
-                    <span className="text-sm text-gray-500">{item.description}</span>
-                    <span className="font-medium text-blue-600">${item.price}</span>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4">
+                        <span className="font-medium text-gray-900">{item.name}</span>
+                        <span className="text-sm text-gray-500">系列：{item.series}</span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-4">
+                        <span className="text-sm text-gray-500">{item.description}</span>
+                        <span className="font-medium text-blue-600">${item.price}</span>
+                        {item.hasMilk && (
+                          <span className="text-sm text-gray-500">含牛奶</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingItem(item)}
+                        className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 rounded-md hover:bg-blue-50"
+                      >
+                        編輯
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 border border-red-200 rounded-md hover:bg-red-50"
+                      >
+                        刪除
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <button
-                  onClick={async () => {
-                    await handleDelete(item.id)
-                  }}
-                  className="ml-4 px-3 py-1.5 text-sm text-red-600 hover:text-red-800 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
-                >
-                  刪除
-                </button>
+                )}
               </li>
             ))}
           </ul>

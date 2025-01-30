@@ -12,9 +12,12 @@ type OrderItem = {
   quantity: number
   ice: string
   milkRatio?: string
+  price: number
 }
 
 type Order = {
+  userName: string
+  userId: string
   id: string
   status: string
   createdAt: string
@@ -67,76 +70,50 @@ export default function UserOrders() {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">我的訂單紀錄</h1>
       
-      <div className="space-y-6">
-        {orders.map((order) => (
-          <div key={order.id} className="border rounded-lg p-4">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm text-gray-500">訂單編號</p>
-                <p className="font-medium">{order.id}</p>
-                <p className="text-sm text-gray-500 mt-2">訂單狀態</p>
-                <p className="font-medium">
-                  {order.status === 'pending' ? '製作中' : '已完成'}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">訂單時間</p>
-                <p className="font-medium">
-                  {new Date(order.createdAt).toLocaleString()}
-                </p>
-                {order.completedAt && (
-                  <>
-                    <p className="text-sm text-gray-500 mt-2">完成時間</p>
-                    <p className="font-medium">
-                      {new Date(order.completedAt).toLocaleString()}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <p className="font-medium mb-2">訂購項目</p>
-              <div className="space-y-2">
-                {order.items.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-medium">{item.menuItem.name}</p>
-                      <p className="text-sm text-gray-600">
-                        冰塊: {item.ice}
-                        {item.milkRatio && `, 牛奶: ${item.milkRatio}`}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm">
-                        ${item.menuItem.price} x {item.quantity}
-                      </p>
-                      <p className="font-medium">
-                        ${item.menuItem.price * item.quantity}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t mt-4 pt-4">
-                <div className="flex justify-between items-center">
-                  <p className="font-medium">總計</p>
-                  <p className="font-medium">
-                    $
-                    {order.items.reduce(
-                      (sum, item) =>
-                        sum + item.menuItem.price * item.quantity,
-                      0
+      <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order.id} className="bg-white rounded-lg shadow-sm p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-medium">訂單編號：{order.id}</h3>
+                  <p className="text-sm text-gray-500">
+                    訂購時間：{new Date(order.createdAt).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    訂購狀態：{order.status == 'pending' ? '未完成' : '已完成'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-blue-600">
+                    ${order.items.reduce((sum, item) => 
+                      sum + (item.price * item.quantity), 0
                     )}
                   </p>
                 </div>
               </div>
+
+              <div className="border-t pt-3">
+                <table className="w-full">
+                  <thead className="text-sm text-gray-600">
+                    <tr>
+                      <th className="text-left">品項</th>
+                      <th className="text-center">數量</th>
+                      <th className="text-right">金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.items.map((item, index) => (
+                      <tr key={index} className="text-sm">
+                        <td className="py-1">{item.menuItem.name}</td>
+                        <td className="text-center">{item.quantity}</td>
+                        <td className="text-right">${item.price * item.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   )
