@@ -16,7 +16,7 @@ const LiffProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         // console.log(process.env.NEXT_PUBLIC_LIFF_ID);
         // console.log(process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
-        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID || '', withLoginOnExternalBrowser: true});
+        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID || ''});
         console.log('LIFF initialized successfully');
 
         if (liff.isLoggedIn()) {
